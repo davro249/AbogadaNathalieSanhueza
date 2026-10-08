@@ -503,6 +503,18 @@
         // --- 2. LÓGICA DE ENVÍO DE CORREO ELECTRÓNICO (Formspree) ---
         const URL_FORMULARIO = "https://formspree.io/f/xqpeqpwy";
 
+        // Genera un N° de ticket único: NS-AAAAMMDD-XXXX (fecha + 4 caracteres aleatorios)
+        function generarTicket() {
+            const f = new Date();
+            const fecha = f.getFullYear().toString()
+                + String(f.getMonth() + 1).padStart(2, '0')
+                + String(f.getDate()).padStart(2, '0');
+            const letras = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sin 0/O/1/I para evitar confusiones
+            let azar = '';
+            for (let i = 0; i < 4; i++) azar += letras.charAt(Math.floor(Math.random() * letras.length));
+            return 'NS-' + fecha + '-' + azar;
+        }
+
         document.getElementById('contactForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -511,12 +523,14 @@
             btnEnviar.innerText = 'ENVIANDO...';
             btnEnviar.disabled = true;
 
+            const ticket = generarTicket();
             const datosFormulario = {
+                ticket: ticket,
                 nombre: document.getElementById('name').value,
                 telefono: document.getElementById('phone').value,
                 email: document.getElementById('email').value,
                 mensaje: document.getElementById('message').value,
-                _subject: "📌 Nueva Consulta Web: " + document.getElementById('name').value
+                _subject: "📌 Ticket " + ticket + " | Nueva Consulta Web: " + document.getElementById('name').value
             };
 
             try {
@@ -532,7 +546,7 @@
                 if (respuesta.ok) {
                     Swal.fire({
                         title: '¡Mensaje Enviado!',
-                        text: '¡Tu consulta ha sido enviada con éxito, ' + datosFormulario.nombre + '! Te responderemos a la brevedad.',
+                        html: '¡Tu consulta ha sido enviada con éxito, ' + datosFormulario.nombre + '!<br>Te responderemos a la brevedad.<br><br>Tu N° de ticket es:<br><strong style="font-size:1.4em;letter-spacing:2px;">' + ticket + '</strong><br><small>Guárdalo para cualquier seguimiento.</small>',
                         icon: 'success',
                         confirmButtonText: 'Aceptar',
                         confirmButtonColor: '#C49A45'
